@@ -1,0 +1,3 @@
+source: /path/to/my_app
+harbr: harbr.example.com
+version: 1.0.0

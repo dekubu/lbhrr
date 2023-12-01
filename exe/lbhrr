@@ -1,69 +1,43 @@
 #!/usr/bin/env ruby
+require 'thor'
 
-require 'optparse'
-
-# Define a class for your CLI
-class CraneCLI
-  def initialize
-    @options = {}
-  end
-
-  def parse_args
-    OptionParser.new do |opts|
-      opts.banner = "Usage: crane [options]"
-
-      opts.on("-c", "--command COMMAND", "Command to execute (deploy/status/rollback)") do |c|
-        @options[:command] = c
+class LbhrrCLI < Thor
+  no_commands do
+    def load_configuration
+      config_path = File.join(Dir.pwd, 'config', 'harbr.manifest.yml')
+      if File.exist?(config_path)
+        YAML.load_file(config_path)
+      else
+        puts "Configuration file not found at #{config_path}."
+        exit 1
       end
-
-      opts.on("-s", "--source SOURCE", "Specify the source directory of the application") do |source|
-        @options[:source] = source
-      end
-
-      opts.on("-h", "--harbr HOST", "Harbr server hostname or IP address") do |host|
-        @options[:harbr] = host
-      end
-
-      # ... other options ...
-
-      opts.on_tail("-help", "Show this message") do
-        puts opts
-        exit
-      end
-    end.parse!
-  end
-
-  def run
-    case @options[:command]
-    when 'deploy'
-      deploy
-    when 'status'
-      status
-    when 'rollback'
-      rollback
-    else
-      puts "Unknown command: #{@options[:command]}"
+    rescue Psych::SyntaxError => e
+      puts "YAML parsing error: #{e.message}"
       exit 1
     end
-  end
+  end  
 
-  private
-
+  desc "deploy", "Deploy an application using the configuration from harbr.manifest.yml"
   def deploy
-    # Implement deployment logic
-    puts "Deploying application..."
+    config = load_configuration
+    source = config['source']
+    harbr = config['harbr']
+    # Implement deployment logic using source and harbr
+    puts "Deploying application from #{source} to #{harbr}..."
   end
-
-  def status
+  desc "status HARBR", "Check the status of the application on the HARBR server"
+  def status(harbr)
     # Implement status checking logic
-    puts "Checking application status..."
+    puts "Checking application status on #{harbr}..."
   end
 
-  def rollback
+  desc "rollback HARBR VERSION", "Rollback the application on the HARBR server to a specified VERSION"
+  def rollback(harbr, version)
     # Implement rollback logic
-    puts "Rolling back application..."
+    puts "Rolling back application on #{harbr} to version #{version}..."
   end
+
+  # ... additional commands ...
 end
 
-# Run the CLI
-CraneCLI.new.parse_args.run
+LbhrrCLI.start(ARGV)
