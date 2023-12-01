@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+# Define a class for your CLI
+class CraneCLI
+  def initialize
+    @options = {}
+  end
+
+  def parse_args
+    OptionParser.new do |opts|
+      opts.banner = "Usage: crane [options]"
+
+      opts.on("-c", "--command COMMAND", "Command to execute (deploy/status/rollback)") do |c|
+        @options[:command] = c
+      end
+
+      opts.on("-s", "--source SOURCE", "Specify the source directory of the application") do |source|
+        @options[:source] = source
+      end
+
+      opts.on("-h", "--harbr HOST", "Harbr server hostname or IP address") do |host|
+        @options[:harbr] = host
+      end
+
+      # ... other options ...
+
+      opts.on_tail("-help", "Show this message") do
+        puts opts
+        exit
+      end
+    end.parse!
+  end
+
+  def run
+    case @options[:command]
+    when 'deploy'
+      deploy
+    when 'status'
+      status
+    when 'rollback'
+      rollback
+    else
+      puts "Unknown command: #{@options[:command]}"
+      exit 1
+    end
+  end
+
+  private
+
+  def deploy
+    # Implement deployment logic
+    puts "Deploying application..."
+  end
+
+  def status
+    # Implement status checking logic
+    puts "Checking application status..."
+  end
+
+  def rollback
+    # Implement rollback logic
+    puts "Rolling back application..."
+  end
+end
+
+# Run the CLI
+CraneCLI.new.parse_args.run
