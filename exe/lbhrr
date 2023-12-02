@@ -78,7 +78,7 @@ class LbhrrCLI < Thor
     def create_example_local_config
       example_local_config = {
         'version' => '0',
-        'host' => 'panamax.harbr.zero2one.ee'
+        'host' => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee'"
       }
 
       YAML.dump(example_local_config)
@@ -98,7 +98,7 @@ class LbhrrCLI < Thor
       # Ensure local configuration exists
       unless File.exist?(local_config_path)
         FileUtils.mkdir_p(File.dirname(local_config_path)) unless Dir.exist?(File.dirname(local_config_path))
-        File.write(local_config_path, create_example_local_config)
+        File.write(local_config_path, create_example_local_config())
       end
 
       # Load and merge configurations
