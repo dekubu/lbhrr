@@ -140,6 +140,7 @@ class LbhrrCLI < Thor
   end
 
 
+
   desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
   def deploy
     begin
@@ -170,24 +171,26 @@ class LbhrrCLI < Thor
       # Copy the previous version to the new version directory if it exists
       system("ssh #{user}@#{host} '[ -d #{previous_version_path} ] && cp -R #{previous_version_path} #{destination_path} || mkdir -p #{destination_path}'")
 
-      # Obtain the list of files tracked by Git
+      # Obtain the list of files tracked by Git and write to a temp file
       git_tracked_files = `git ls-files`.split("\n")
+      Tempfile.create('git_files') do |tempfile|
+        git_tracked_files.each { |file| tempfile.puts(file) }
+        tempfile.close
 
-      # Rsync files to the new version directory and update the symlink
-      if git_tracked_files.any? &&
-        system("rsync -avze ssh --files-from=<(echo #{git_tracked_files.join("\\n")}) ./ #{user}@#{host}:#{destination_path}") &&
-        system("ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'")
-        puts "Successfully deployed application version #{version} to #{host}"
-        increment_version(local_manifest_path, version)
-        deployed(version)
-      else
-        puts "Failed to deploy application version #{version} to #{host}"
+        # Rsync files to the new version directory and update the symlink
+        if system("rsync -avz --files-from=#{tempfile.path} ./ #{user}@#{host}:#{destination_path}") &&
+          system("ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'")
+          puts "Successfully deployed application version #{version} to #{host}"
+          increment_version(local_manifest_path, version)
+          deployed(version)
+        else
+          puts "Failed to deploy application version #{version} to #{host}"
+        end
       end
     rescue => e
       puts "Deployment error: #{e.message}"
     end
   end
-
   # new method goes here
 
 end
