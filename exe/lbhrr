@@ -51,8 +51,8 @@ class LbhrrCLI < Thor
   desc "deploy", "Deploy an application using the configuration from harbr.manifest.yml"
   def deploy
     config = load_configuration
-    source = config['source']
-    harbr = config['harbr']
+    source = config['name']
+    harbr = config['host']
     # Implement deployment logic using source and harbr
     puts "Deploying application from #{source} to #{harbr}..."
   end
