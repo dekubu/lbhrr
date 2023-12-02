@@ -122,6 +122,7 @@ class LbhrrCLI < Thor
   desc "init", "Initialize project with .gitignore"
   def init
     create_gitignore
+    create_example_local_config
     # Include other initialization tasks if necessary
   end
 
