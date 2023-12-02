@@ -99,9 +99,17 @@ class LbhrrCLI < Thor
     end
   end
 
-  desc "pack", "Prepare the application for deployment"
-  def pack
+
+  desc "package", "Prepare the application for deployment"
+  def package
     begin
+      # Load configuration
+      config = load_configuration
+      host = config['host']
+      user = config['user']
+      version = config['version'].to_i
+      raise "Configuration error: Host, User, or Version missing" unless host && user && version > 0
+
       # Check for a git repository
       unless system("git rev-parse --is-inside-work-tree > /dev/null 2>&1")
         raise "No Git repository found in the current directory"
@@ -109,8 +117,12 @@ class LbhrrCLI < Thor
 
       # Check if the repository is clean
       status = `git status --porcelain`.strip
-      unless status.empty?
-        raise "The Git repository is not clean. Please commit or stash your changes."
+      if status.empty?
+        puts "Git repository is clean."
+      else
+        puts "Git repository is dirty, committing changes..."
+        system("git add .") or raise "Failed to add changes to Git"
+        system("git commit -m 'packaged #{version} - OK'") or raise "Failed to commit changes to Git"
       end
 
       # Delete vendor directory if it exists
@@ -125,6 +137,7 @@ class LbhrrCLI < Thor
       puts "Packaging error: #{e.message}"
     end
   end
+
 
   # new method goes here
 
