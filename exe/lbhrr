@@ -132,7 +132,7 @@ class LbhrrCLI < Thor
       # Check if the repository is clean
       puts "Git repository is dirty, committing changes..."
       system("git add .") or raise "Failed to add changes to Git"
-      system("git commit -m 'packaged #{version} - OK'") or raise "Failed to commit changes to Git"
+      system("git commit -m 'packaged #{version}'") or raise "Failed to commit changes to Git"
 
       puts "Packaging completed successfully."
     rescue => e
