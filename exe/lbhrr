@@ -57,6 +57,7 @@ class LbhrrCLI < Thor
     end
 
   end
+
   desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
   def deploy
     begin
@@ -98,17 +99,6 @@ class LbhrrCLI < Thor
     end
   end
 
-  def increment_version(manifest_path, current_version)
-    new_version = current_version + 1
-
-    manifest = YAML.load_file(manifest_path)
-    manifest['version'] = new_version
-    File.open(manifest_path, 'w') { |file| file.write(manifest.to_yaml) }
-    puts "Version incremented to #{new_version}"
-  end
-
-end
-# ... additional commands ...
 end
 
 LbhrrCLI.start(ARGV)
