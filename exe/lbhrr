@@ -6,6 +6,21 @@ require 'fileutils'
 
 class LbhrrCLI < Thor
   no_commands do
+
+    def amend_last_commit(new_message)
+      begin
+        # Ensure we are in a git repository
+        system("git rev-parse --git-dir > /dev/null 2>&1") or raise "Not a git repository"
+
+        # Amend the last commit with the new message
+        system("git commit --amend -m \"#{new_message}\"") or raise "Failed to amend the last commit"
+
+        puts "Successfully amended the last commit."
+      rescue => e
+        puts "Error during commit amend: #{e.message}"
+      end
+    end
+
     def create_gitignore
       gitignore_path = File.join(Dir.pwd, '.gitignore')
       return if File.exist?(gitignore_path)
@@ -39,10 +54,10 @@ class LbhrrCLI < Thor
       # Git add all changes
       system("git add .") or raise "Failed to add changes to Git"
 
+  
       # Commit changes with a message
       commit_message = "Deployed version #{version}"
-      system("git commit -m '#{commit_message}'") or raise "Failed to commit changes to Git"
-
+      amend_last_commit commit_message
       # Create a Git tag for the version
       tag_message = "Deployment for version #{version}"
       system("git tag -a 'v#{version}' -m '#{tag_message}'") or raise "Failed to create Git tag"
