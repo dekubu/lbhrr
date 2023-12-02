@@ -15,8 +15,8 @@ class LbhrrCLI < Thor
 
     def create_example_local_config
       example_local_config = {
-        'name' => 'name',
-        'host' => 'example.com'
+        'version' => '0',
+        'host' => 'panamax.harbr.zero2one.ee'
       }
 
       YAML.dump(example_local_config)
