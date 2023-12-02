@@ -115,22 +115,14 @@ class LbhrrCLI < Thor
         raise "No Git repository found in the current directory"
       end
 
-      # Check if the repository is clean
-      status = `git status --porcelain`.strip
-      if status.empty?
-        puts "Git repository is clean."
-      else
-        puts "Git repository is dirty, committing changes..."
-        system("git add .") or raise "Failed to add changes to Git"
-        system("git commit -m 'packaged #{version} - OK'") or raise "Failed to commit changes to Git"
-      end
-
       # Delete vendor directory if it exists
       vendor_path = File.join(Dir.pwd, 'vendor')
       FileUtils.rm_rf(vendor_path) if Dir.exist?(vendor_path)
-
-      # Bundle install to vendor/bundle
       system("bundle install --path vendor/bundle") or raise "Bundle install failed"
+      # Check if the repository is clean
+      puts "Git repository is dirty, committing changes..."
+      system("git add .") or raise "Failed to add changes to Git"
+      system("git commit -m 'packaged #{version} - OK'") or raise "Failed to commit changes to Git"
 
       puts "Packaging completed successfully."
     rescue => e
