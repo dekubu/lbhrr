@@ -5,6 +5,22 @@ require 'fileutils'
 
 class LbhrrCLI < Thor
   no_commands do
+    def deployed(version)
+      # Git add all changes
+      system("git add .") or raise "Failed to add changes to Git"
+
+      # Commit changes with a message
+      commit_message = "Deployed version #{version}"
+      system("git commit -m '#{commit_message}'") or raise "Failed to commit changes to Git"
+
+      # Create a Git tag for the version
+      tag_message = "Deployment for version #{version}"
+      system("git tag -a 'v#{version}' -m '#{tag_message}'") or raise "Failed to create Git tag"
+
+      puts "Deployment changes committed and tagged as v#{version}."
+    rescue => e
+      puts "Error during post-deployment process: #{e.message}"
+    end
 
     def create_example_global_config
       example_global_config = {
@@ -61,7 +77,7 @@ class LbhrrCLI < Thor
   desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
   def deploy
     begin
-      
+
       package
 
       config = load_configuration
@@ -94,6 +110,7 @@ class LbhrrCLI < Thor
         system("ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'")
         puts "Successfully deployed application version #{version} to #{host}"
         increment_version(local_manifest_path, version)
+        deployed(version)
       else
         puts "Failed to deploy application version #{version} to #{host}"
       end
