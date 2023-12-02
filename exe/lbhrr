@@ -21,24 +21,30 @@ class LbhrrCLI < Thor
 
       YAML.dump(example_local_config)
     end
-
+    
     def load_configuration
       global_config_dir = File.expand_path('~/.config/harbr')
       global_config_path = File.join(global_config_dir, 'harbr.manifest.yml')
       local_config_path = File.join(Dir.pwd, 'config', 'manifest.yml')
-  
+    
       # Ensure global configuration exists
       unless File.exist?(global_config_path)
         FileUtils.mkdir_p(global_config_dir) unless Dir.exist?(global_config_dir)
         File.write(global_config_path, create_example_global_config)
       end
-  
+    
       # Ensure local configuration exists
       unless File.exist?(local_config_path)
         FileUtils.mkdir_p(File.dirname(local_config_path)) unless Dir.exist?(File.dirname(local_config_path))
         File.write(local_config_path, create_example_local_config)
       end
-    end    
+    
+      # Load and merge configurations
+      global_config = YAML.load_file(global_config_path) || {}
+      local_config = YAML.load_file(local_config_path) || {}
+      global_config.merge(local_config)
+    end
+    
     
   end  
 
