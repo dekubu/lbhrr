@@ -8,7 +8,7 @@ class LbhrrCLI < Thor
 
     def create_example_global_config
       example_global_config = {
-        'user' => 'root'
+        'user' => 'root',
         'host' => 'harbr.zero2one.ee'
       }
       YAML.dump(example_global_config)
