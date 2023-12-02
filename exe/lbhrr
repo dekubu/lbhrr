@@ -49,6 +49,7 @@ class LbhrrCLI < Thor
   end  
 
 
+
   desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
   def deploy
     begin
@@ -69,13 +70,12 @@ class LbhrrCLI < Thor
       destination_path = "#{versions_directory}/#{version}"
       current_path = "#{base_directory}/current"
 
-      # Check and create base and versions directories on the server
+      # Check and create the base directory and versions directory on the server
       system("ssh #{host} 'mkdir -p #{versions_directory}'")
 
-      # Create the version directory and symlink on the server
-      system("ssh #{host} 'mkdir -p #{destination_path} && ln -sfn #{destination_path} #{current_path}'")
-
-      if system("rsync -avze ssh ./ #{host}:#{destination_path}")
+      # Rsync files to the version directory and create/update the symlink
+      if system("rsync -avze ssh ./ #{host}:#{destination_path}") &&
+        system("ssh #{host} 'ln -sfn #{destination_path} #{current_path}'")
         puts "Successfully deployed application version #{version} to #{host}"
         increment_version(local_manifest_path, version)
       else
@@ -94,19 +94,6 @@ class LbhrrCLI < Thor
     File.open(manifest_path, 'w') { |file| file.write(manifest.to_yaml) }
     puts "Version incremented to #{new_version}"
   end
-
-  desc "status HARBR", "Check the status of the application on the HARBR server"
-  def status(harbr)
-    # Implement status checking logic
-    puts "Checking application status on #{harbr}..."
-  end
-
-  desc "rollback HARBR VERSION", "Rollback the application on the HARBR server to a specified VERSION"
-  def rollback(harbr, version)
-    # Implement rollback logic
-    puts "Rolling back application on #{harbr} to version #{version}..."
-  end
-
   # ... additional commands ...
 end
 
