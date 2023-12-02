@@ -54,47 +54,59 @@ class LbhrrCLI < Thor
       File.open(manifest_path, 'w') { |file| file.write(manifest.to_yaml) }
       puts "Version incremented to #{new_version}"
 
-    end  
-  end
-
-
-  desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
-  def deploy
-    begin
-      config = load_configuration
-      host = config['host']
-      user = config['user']
-      raise "Host configuration missing" unless host
-
-      local_manifest_path = File.join(Dir.pwd, 'config', 'manifest.yml')
-      raise "Local manifest file not found at #{local_manifest_path}" unless File.exist?(local_manifest_path)
-
-      local_config = YAML.load_file(local_manifest_path) || {}
-      version = local_config['version'].to_i
-      raise "Version not specified in manifest.yml" unless version
-
-      basename = File.basename(Dir.pwd)
-      base_directory = "/var/harbr/#{basename}"
-      versions_directory = "#{base_directory}/versions"
-      destination_path = "#{versions_directory}/#{version}"
-      current_path = "#{base_directory}/current"
-
-      # Check and create the base directory and versions directory on the server
-      system("ssh #{user}@#{host} 'mkdir -p #{versions_directory}'")
-
-      # Rsync files to the version directory and create/update the symlink
-      if system("rsync -avze ssh ./ #{user}@#{host}:#{destination_path}") &&
-        system("ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'")
-        puts "Successfully deployed application version #{version} to #{host}"
-        increment_version(local_manifest_path, version)
-      else
-        puts "Failed to deploy application version #{version} to #{host}"
-      end
-    rescue => e
-      puts "Deployment error: #{e.message}"
     end
-  end
 
+    desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
+    def deploy
+      begin
+        config = load_configuration
+        host = config['host']
+        user = config['user']
+        raise "Host configuration missing" unless host
+
+        local_manifest_path = File.join(Dir.pwd, 'config', 'manifest.yml')
+        raise "Local manifest file not found at #{local_manifest_path}" unless File.exist?(local_manifest_path)
+
+        local_config = YAML.load_file(local_manifest_path) || {}
+        version = local_config['version'].to_i
+        raise "Version not specified in manifest.yml" unless version
+
+        basename = File.basename(Dir.pwd)
+        base_directory = "/var/harbr/#{basename}"
+        versions_directory = "#{base_directory}/versions"
+        previous_version_path = "#{versions_directory}/#{version - 1}"
+        destination_path = "#{versions_directory}/#{version}"
+        current_path = "#{base_directory}/current"
+
+        # Check and create the versions directory on the server
+        system("ssh #{user}@#{host} 'mkdir -p #{versions_directory}'")
+
+        # Copy the previous version to the new version directory if it exists
+        system("ssh #{user}@#{host} '[ -d #{previous_version_path} ] && cp -R #{previous_version_path} #{destination_path} || mkdir -p #{destination_path}'")
+
+        # Rsync files to the new version directory and update the symlink
+        if system("rsync -avze ssh ./ #{user}@#{host}:#{destination_path}") &&
+          system("ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'")
+          puts "Successfully deployed application version #{version} to #{host}"
+          increment_version(local_manifest_path, version)
+        else
+          puts "Failed to deploy application version #{version} to #{host}"
+        end
+      rescue => e
+        puts "Deployment error: #{e.message}"
+      end
+    end
+
+    def increment_version(manifest_path, current_version)
+      new_version = current_version + 1
+
+      manifest = YAML.load_file(manifest_path)
+      manifest['version'] = new_version
+      File.open(manifest_path, 'w') { |file| file.write(manifest.to_yaml) }
+      puts "Version incremented to #{new_version}"
+    end
+
+  end
   # ... additional commands ...
 end
 
