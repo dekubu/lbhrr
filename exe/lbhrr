@@ -99,6 +99,35 @@ class LbhrrCLI < Thor
     end
   end
 
+  desc "pack", "Prepare the application for deployment"
+  def pack
+    begin
+      # Check for a git repository
+      unless system("git rev-parse --is-inside-work-tree > /dev/null 2>&1")
+        raise "No Git repository found in the current directory"
+      end
+
+      # Check if the repository is clean
+      status = `git status --porcelain`.strip
+      unless status.empty?
+        raise "The Git repository is not clean. Please commit or stash your changes."
+      end
+
+      # Delete vendor directory if it exists
+      vendor_path = File.join(Dir.pwd, 'vendor')
+      FileUtils.rm_rf(vendor_path) if Dir.exist?(vendor_path)
+
+      # Bundle install to vendor/bundle
+      system("bundle install --path vendor/bundle") or raise "Bundle install failed"
+
+      puts "Packaging completed successfully."
+    rescue => e
+      puts "Packaging error: #{e.message}"
+    end
+  end
+
+  # new method goes here
+
 end
 
 LbhrrCLI.start(ARGV)
