@@ -61,6 +61,9 @@ class LbhrrCLI < Thor
   desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
   def deploy
     begin
+      
+      package
+
       config = load_configuration
       host = config['host']
       user = config['user']
