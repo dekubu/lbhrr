@@ -80,7 +80,7 @@ class LbhrrCLI < Thor
       current_path = "#{base_directory}/current"
 
       # Check and create the base directory and versions directory on the server
-      system("ssh #{user}@{host} 'mkdir -p #{versions_directory}'")
+      system("ssh #{user}@#{host} 'mkdir -p #{versions_directory}'")
 
       # Rsync files to the version directory and create/update the symlink
       if system("rsync -avze ssh ./ #{user}@#{host}:#{destination_path}") &&
