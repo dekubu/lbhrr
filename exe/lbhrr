@@ -8,7 +8,8 @@ class LbhrrCLI < Thor
 
     def create_example_global_config
       example_global_config = {
-        'harbr' => 'harbr.zero2one.ee'
+        'user' => 'root'
+        'host' => 'harbr.zero2one.ee'
       }
       YAML.dump(example_global_config)
     end
@@ -55,6 +56,7 @@ class LbhrrCLI < Thor
     begin
       config = load_configuration
       host = config['host']
+      user = config['user']
       raise "Host configuration missing" unless host
 
       local_manifest_path = File.join(Dir.pwd, 'config', 'manifest.yml')
@@ -71,11 +73,11 @@ class LbhrrCLI < Thor
       current_path = "#{base_directory}/current"
 
       # Check and create the base directory and versions directory on the server
-      system("ssh #{host} 'mkdir -p #{versions_directory}'")
+      system("ssh #{user}:#{host} 'mkdir -p #{versions_directory}'")
 
       # Rsync files to the version directory and create/update the symlink
-      if system("rsync -avze ssh ./ #{host}:#{destination_path}") &&
-        system("ssh #{host} 'ln -sfn #{destination_path} #{current_path}'")
+      if system("rsync -avze ssh ./ #{user}:#{host}:#{destination_path}") &&
+        system("ssh #{user}/#{host} 'ln -sfn #{destination_path} #{current_path}'")
         puts "Successfully deployed application version #{version} to #{host}"
         increment_version(local_manifest_path, version)
       else
