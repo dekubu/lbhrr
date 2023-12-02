@@ -1,20 +1,44 @@
 #!/usr/bin/env ruby
 require 'thor'
+require 'fileutils'
 
 class LbhrrCLI < Thor
   no_commands do
-    def load_configuration
-      config_path = File.join(Dir.pwd, 'config', 'harbr.manifest.yml')
-      if File.exist?(config_path)
-        YAML.load_file(config_path)
-      else
-        puts "Configuration file not found at #{config_path}."
-        exit 1
-      end
-    rescue Psych::SyntaxError => e
-      puts "YAML parsing error: #{e.message}"
-      exit 1
+
+    def create_example_global_config
+      example_global_config = {
+        'harbr' => 'harbr.zero2one.ee'
+      }
+      YAML.dump(example_global_config)
     end
+
+    def create_example_local_config
+      example_local_config = {
+        'name' => 'name',
+        'host' => 'example.com'
+      }
+
+      YAML.dump(example_local_config)
+    end
+
+    def load_configuration
+      global_config_dir = File.expand_path('~/.config/harbr')
+      global_config_path = File.join(global_config_dir, 'harbr.manifest.yml')
+      local_config_path = File.join(Dir.pwd, 'config', 'manifest.yml')
+  
+      # Ensure global configuration exists
+      unless File.exist?(global_config_path)
+        FileUtils.mkdir_p(global_config_dir) unless Dir.exist?(global_config_dir)
+        File.write(global_config_path, create_example_global_config)
+      end
+  
+      # Ensure local configuration exists
+      unless File.exist?(local_config_path)
+        FileUtils.mkdir_p(File.dirname(local_config_path)) unless Dir.exist?(File.dirname(local_config_path))
+        File.write(local_config_path, create_example_local_config)
+      end
+    end    
+    
   end  
 
   desc "deploy", "Deploy an application using the configuration from harbr.manifest.yml"
