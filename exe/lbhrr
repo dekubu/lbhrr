@@ -5,6 +5,35 @@ require 'fileutils'
 
 class LbhrrCLI < Thor
   no_commands do
+    def create_gitignore
+      gitignore_path = File.join(Dir.pwd, '.gitignore')
+      return if File.exist?(gitignore_path)
+
+      gitignore_content = %q{
+        # Ignore bundler config and installed gems.
+        /.bundle
+        # Ignore all logfiles and tempfiles.
+        /log/*
+        /tmp/*
+        !/log/.keep
+        !/tmp/.keep
+
+        # Ignore other unneeded files.
+        *.pid
+        *.swap
+        *.gem
+        *.rbc
+        .DS_Store
+        .idea
+        .byebug_history
+        }
+
+      File.write(gitignore_path, gitignore_content.strip)
+      puts ".gitignore created for Rack project."
+    rescue => e
+      puts "Error creating .gitignore: #{e.message}"
+    end
+
     def deployed(version)
       # Git add all changes
       system("git add .") or raise "Failed to add changes to Git"
@@ -74,51 +103,11 @@ class LbhrrCLI < Thor
 
   end
 
-  desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
-  def deploy
-    begin
-
-      package
-
-      config = load_configuration
-      host = config['host']
-      user = config['user']
-      raise "Host configuration missing" unless host
-
-      local_manifest_path = File.join(Dir.pwd, 'config', 'manifest.yml')
-      raise "Local manifest file not found at #{local_manifest_path}" unless File.exist?(local_manifest_path)
-
-      local_config = YAML.load_file(local_manifest_path) || {}
-      version = local_config['version'].to_i
-      raise "Version not specified in manifest.yml" unless version
-
-      basename = File.basename(Dir.pwd)
-      base_directory = "/var/harbr/#{basename}"
-      versions_directory = "#{base_directory}/versions"
-      previous_version_path = "#{versions_directory}/#{version - 1}"
-      destination_path = "#{versions_directory}/#{version}"
-      current_path = "#{base_directory}/current"
-
-      # Check and create the versions directory on the server
-      system("ssh #{user}@#{host} 'mkdir -p #{versions_directory}'")
-
-      # Copy the previous version to the new version directory if it exists
-      system("ssh #{user}@#{host} '[ -d #{previous_version_path} ] && cp -R #{previous_version_path} #{destination_path} || mkdir -p #{destination_path}'")
-
-      # Rsync files to the new version directory and update the symlink
-      if system("rsync -avze ssh ./ #{user}@#{host}:#{destination_path}") &&
-        system("ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'")
-        puts "Successfully deployed application version #{version} to #{host}"
-        increment_version(local_manifest_path, version)
-        deployed(version)
-      else
-        puts "Failed to deploy application version #{version} to #{host}"
-      end
-    rescue => e
-      puts "Deployment error: #{e.message}"
-    end
+  desc "init", "Initialize project with .gitignore"
+  def init
+    create_gitignore
+    # Include other initialization tasks if necessary
   end
-
 
   desc "package", "Prepare the application for deployment"
   def package
@@ -150,6 +139,54 @@ class LbhrrCLI < Thor
     end
   end
 
+
+  desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
+  def deploy
+    begin
+      package
+
+      config = load_configuration
+      host = config['host']
+      user = config['user']
+      raise "Host configuration missing" unless host
+
+      local_manifest_path = File.join(Dir.pwd, 'config', 'manifest.yml')
+      raise "Local manifest file not found at #{local_manifest_path}" unless File.exist?(local_manifest_path)
+
+      local_config = YAML.load_file(local_manifest_path) || {}
+      version = local_config['version'].to_i
+      raise "Version not specified in manifest.yml" unless version
+
+      basename = File.basename(Dir.pwd)
+      base_directory = "/var/harbr/#{basename}"
+      versions_directory = "#{base_directory}/versions"
+      previous_version_path = "#{versions_directory}/#{version - 1}"
+      destination_path = "#{versions_directory}/#{version}"
+      current_path = "#{base_directory}/current"
+
+      # Check and create the versions directory on the server
+      system("ssh #{user}@#{host} 'mkdir -p #{versions_directory}'")
+
+      # Copy the previous version to the new version directory if it exists
+      system("ssh #{user}@#{host} '[ -d #{previous_version_path} ] && cp -R #{previous_version_path} #{destination_path} || mkdir -p #{destination_path}'")
+
+      # Obtain the list of files tracked by Git
+      git_tracked_files = `git ls-files`.split("\n")
+
+      # Rsync files to the new version directory and update the symlink
+      if git_tracked_files.any? &&
+        system("rsync -avze ssh --files-from=<(echo #{git_tracked_files.join("\\n")}) ./ #{user}@#{host}:#{destination_path}") &&
+        system("ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'")
+        puts "Successfully deployed application version #{version} to #{host}"
+        increment_version(local_manifest_path, version)
+        deployed(version)
+      else
+        puts "Failed to deploy application version #{version} to #{host}"
+      end
+    rescue => e
+      puts "Deployment error: #{e.message}"
+    end
+  end
 
   # new method goes here
 
