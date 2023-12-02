@@ -54,7 +54,7 @@ class LbhrrCLI < Thor
       # Git add all changes
       system("git add .") or raise "Failed to add changes to Git"
 
-  
+
       # Commit changes with a message
       commit_message = "Deployed version #{version}"
       amend_last_commit commit_message
@@ -121,7 +121,15 @@ class LbhrrCLI < Thor
 
   desc "init", "Initialize project with .gitignore"
   def init
-    load_configuration
+
+    local_config_path = File.join(Dir.pwd, 'config', 'manifest.yml')
+
+    unless File.exist?(local_config_path)
+      FileUtils.mkdir_p(File.dirname(local_config_path)) unless Dir.exist?(File.dirname(local_config_path))
+      File.write(local_config_path, create_example_local_config())
+    end
+    # Load and merge configurations
+    local_config = YAML.load_file(local_config_path) || {}
     create_gitignore
 
     # Include other initialization tasks if necessary
