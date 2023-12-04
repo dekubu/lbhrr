@@ -204,7 +204,7 @@ class LbhrrCLI < Thor
         tempfile.close
 
         # Rsync files to the new version directory and update the symlink
-        if system("rsync -avz --exclude=.git --exclude=.bundle --exclude=tmp   --files-from=#{tempfile.path} ./ #{user}@#{host}:#{destination_path}") &&
+        if system("rsync -avz --exclude=.git --exclude=tmp   --files-from=#{tempfile.path} ./ #{user}@#{host}:#{destination_path}") &&
           system("ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'")
           puts "Successfully deployed application version #{version} to #{host}"
           increment_version(local_manifest_path, version)
