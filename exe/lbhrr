@@ -194,7 +194,7 @@ class LbhrrCLI < Thor
 
       # Prepare the rsync exclude option using .gitignore
       gitignore_path = File.join(Dir.pwd, '.gitignore')
-      exclude_option = File.exist?(gitignore_path) ? "--exlude=.git --exclude-from='#{gitignore_path}'" : ""
+      exclude_option = File.exist?(gitignore_path) ? "--exlude='.git' --exclude-from='#{gitignore_path}'" : ""
 
       # Rsync files to the new version directory, excluding files as per .gitignore
       rsync_command = "rsync -avz #{exclude_option} ./ #{user}@#{host}:#{destination_path}"
