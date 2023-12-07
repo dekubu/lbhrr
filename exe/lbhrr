@@ -77,6 +77,7 @@ class LbhrrCLI < Thor
 
     def create_example_local_config
       example_local_config = {
+        'name' => File.basename(Dir.pwd),
         'version' => '0',
         'host' => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee'"
       }
