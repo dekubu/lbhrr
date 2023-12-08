@@ -50,11 +50,10 @@ class LbhrrCLI < Thor
       puts "Error creating .gitignore: #{e.message}"
     end
 
-    def deployed(version)
+    def deployed(local_manifest_path,version)
       # Git add all changes
+      increment_version(local_manifest_path, version)
       system("git add .") or raise "Failed to add changes to Git"
-
-
       # Commit changes with a message
       commit_message = "Deployed version #{version}"
       amend_last_commit commit_message
@@ -205,8 +204,7 @@ class LbhrrCLI < Thor
       if `#{rsync_command}` &&
         `ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'`
         puts "Successfully deployed application version #{version} to #{host}"
-        increment_version(local_manifest_path, version)
-        deployed(version)
+        deployed(local_manifest_path, version)
       else
         puts "Failed to deploy application version #{version} to #{host}"
       end
