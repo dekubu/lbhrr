@@ -176,6 +176,8 @@ class LbhrrCLI < Thor
       puts "Deleting the directory: #{current_dir}"
       FileUtils.rm_rf(current_dir)
 
+      Dir.chdir(parent_dir)
+      
       puts "#{current_dir} has been deleted."
 
     end
