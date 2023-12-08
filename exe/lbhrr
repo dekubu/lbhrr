@@ -7,6 +7,21 @@ require 'fileutils'
 class LbhrrCLI < Thor
   no_commands do
 
+    def stop_app_on_server(container_name)
+      # Implement logic to stop the app on the server
+      # This might include stopping services, processes, etc.
+    end
+
+    def remove_server_data(container_name)
+      # Implement logic to remove all server-side data and configurations
+      # This includes deleting directories, files, service configurations, etc.
+    end
+
+    def remove_local_data(container_name)
+      # Implement logic to remove all local data and configurations
+      # This includes deleting local files, configurations, etc.
+    end
+
     def amend_last_commit(new_message)
       begin
         # Ensure we are in a git repository
@@ -167,6 +182,21 @@ class LbhrrCLI < Thor
     end
   end
 
+  desc "destroy", "Destroy an app and remove all traces"
+  def destroy(container_name)
+    puts "Destroying app: #{container_name}"
+
+    # Step 1: Stop the app on the server
+    stop_app_on_server(container_name)
+
+    # Step 2: Remove app data and configurations from the server
+    remove_server_data(container_name)
+
+    # Step 3: Remove local configurations and files related to the app
+    remove_local_data(container_name)
+
+    puts "App #{container_name} has been successfully destroyed."
+  end
 
   desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
   def deploy
