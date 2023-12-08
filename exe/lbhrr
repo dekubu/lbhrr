@@ -156,7 +156,8 @@ class LbhrrCLI < Thor
       # Delete vendor directory if it exists
       vendor_path = File.join(Dir.pwd, 'vendor')
       FileUtils.rm_rf(vendor_path) if Dir.exist?(vendor_path)
-      `bundle install --path vendor/bundle` or raise "Bundle install failed"
+      `bundle config set --local path 'vendor/bundle'`
+      `bundle install` or raise "Bundle install failed"
       # Check if the repository is clean
       puts "Git repository is dirty, committing changes..."
       `git add .` or raise "Failed to add changes to Git"
