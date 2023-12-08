@@ -162,7 +162,7 @@ class LbhrrCLI < Thor
     host = config["host"]
     user = config["user"]
     puts "Destroying app: #{container_name}"
-    `ssh #{user}@#{host} 'harbr drop #{container_name}'`
+    `ssh #{user}@#{host} 'harbr destroy #{container_name}'`
     puts "App #{container_name} has been successfully destroyed."
   end
 
