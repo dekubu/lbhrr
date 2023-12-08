@@ -155,6 +155,15 @@ class LbhrrCLI < Thor
     # Include other initialization tasks if necessary
   end
 
+
+  desc "containers", "list all containers"
+  def containers
+    config = load_configuration
+    host = config["host"]
+    user = config["user"]
+    puts `ssh #{user}@#{host} 'harbr containers'`  
+  end
+
   desc "drop", "Destroy an app and remove all traces"
   def drop
     container_name = File.basename(Dir.pwd)
@@ -177,7 +186,7 @@ class LbhrrCLI < Thor
       FileUtils.rm_rf(current_dir)
 
       Dir.chdir(parent_dir)
-      
+
       puts "#{current_dir} has been deleted."
 
     end
