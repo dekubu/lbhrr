@@ -149,7 +149,7 @@ class LbhrrCLI < Thor
       raise "Configuration error: Host, User, or Version missing" unless host && port && user && version > 0
 
       # Check for a git repository
-      unless system("git rev-parse --is-inside-work-tree > /dev/null 2>&1")
+      unless `git rev-parse --is-inside-work-tree > /dev/null 2>&1`
         raise "No Git repository found in the current directory"
       end
 
