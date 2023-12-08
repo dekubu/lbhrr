@@ -164,7 +164,7 @@ class LbhrrCLI < Thor
     puts "Destroying app: #{container_name}"
     `ssh #{user}@#{host} 'harbr destroy #{container_name}'`
 
-    self_delete = SelfDelete.new
+    self_delete = Lbhrr::SelfDelete.new
     self_delete.delete_current_directory
     puts "App #{container_name} has been successfully destroyed."
   end
