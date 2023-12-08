@@ -192,7 +192,7 @@ class LbhrrCLI < Thor
       current_path = "#{base_directory}/current"
 
       # Check and create the versions directory on the server
-      system("ssh #{user}@#{host} 'mkdir -p #{versions_directory}'")
+      `ssh #{user}@#{host} 'mkdir -p #{versions_directory}'`
 
       # Prepare the rsync exclude option using .gitignore
       gitignore_path = File.join(Dir.pwd, '.gitignore')
@@ -201,8 +201,8 @@ class LbhrrCLI < Thor
       # Rsync files to the new version directory, excluding files as per .gitignore
       rsync_command = "rsync -avz #{exclude_option} ./ #{user}@#{host}:#{destination_path}"
 
-      if system(rsync_command) &&
-        system("ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'")
+      if `#{rsync_command}` &&
+        `ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'`
         puts "Successfully deployed application version #{version} to #{host}"
         increment_version(local_manifest_path, version)
         deployed(version)
