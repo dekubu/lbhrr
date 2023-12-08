@@ -1,30 +1,53 @@
 #!/usr/bin/env ruby
-require 'thor'
-require 'yaml'
-require 'tempfile'
-require 'fileutils'
+require_relative "../lib/lbhrr"
 
 class LbhrrCLI < Thor
   no_commands do
-    def amend_last_commit(new_message)
-      begin
-        # Ensure we are in a git repository
-        system("git rev-parse --git-dir > /dev/null 2>&1") or raise "Not a git repository"
+    def package
+      # Load configuration
+      config = load_configuration
+      host = config["host"]
+      user = config["user"]
+      port = config["port"]
+      version = config["version"].to_i
+      raise "Configuration error: Host, User, or Version missing" unless host && port && user && version > 0
 
-        # Amend the last commit with the new message
-        system("git commit --amend -m \"#{new_message}\"") or raise "Failed to amend the last commit"
-
-        puts "Successfully amended the last commit."
-      rescue => e
-        puts "Error during commit amend: #{e.message}"
+      # Check for a git repository
+      unless `git rev-parse --is-inside-work-tree > /dev/null 2>&1`
+        raise "No Git repository found in the current directory"
       end
+
+      # Delete vendor directory if it exists
+      vendor_path = File.join(Dir.pwd, "vendor")
+      FileUtils.rm_rf(vendor_path) if Dir.exist?(vendor_path)
+      `bundle config set --local path 'vendor/bundle'`
+      `bundle install` or raise "Bundle install failed"
+      # Check if the repository is clean
+      puts "Git repository is dirty, committing changes..."
+      `git add .` or raise "Failed to add changes to Git"
+      `git commit -m 'packaged #{version}'` or raise "Failed to commit changes to Git"
+      puts "Packaging completed successfully."
+    rescue => e
+      puts "Packaging error: #{e.message}"
+    end
+
+    def amend_last_commit(new_message)
+      # Ensure we are in a git repository
+      system("git rev-parse --git-dir > /dev/null 2>&1") or raise "Not a git repository"
+
+      # Amend the last commit with the new message
+      system("git commit --amend -m \"#{new_message}\"") or raise "Failed to amend the last commit"
+
+      puts "Successfully amended the last commit."
+    rescue => e
+      puts "Error during commit amend: #{e.message}"
     end
 
     def create_gitignore
-      gitignore_path = File.join(Dir.pwd, '.gitignore')
+      gitignore_path = File.join(Dir.pwd, ".gitignore")
       return if File.exist?(gitignore_path)
 
-      gitignore_content = %q{
+      gitignore_content = '
         # Ignore bundler config and installed gems.
         /.bundle
         # Ignore all logfiles and tempfiles.
@@ -41,7 +64,7 @@ class LbhrrCLI < Thor
         .DS_Store
         .idea
         .byebug_history
-        }
+        '
 
       File.write(gitignore_path, gitignore_content.strip)
       puts ".gitignore created for Rack project."
@@ -49,7 +72,7 @@ class LbhrrCLI < Thor
       puts "Error creating .gitignore: #{e.message}"
     end
 
-    def deployed(local_manifest_path,version)
+    def deployed(local_manifest_path, version)
       # Git add all changes
       increment_version(local_manifest_path, version)
       system("git add .") or raise "Failed to add changes to Git"
@@ -67,27 +90,27 @@ class LbhrrCLI < Thor
 
     def create_example_global_config
       example_global_config = {
-        'user' => 'root',
-        'host' => 'harbr.zero2one.ee'
+        "user" => "root",
+        "host" => "harbr.zero2one.ee"
       }
       YAML.dump(example_global_config)
     end
 
     def create_example_local_config
       example_local_config = {
-        'name' => File.basename(Dir.pwd),
-        'version' => '0',
-        'port' => nil,
-        'host' => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee"
+        "name" => File.basename(Dir.pwd),
+        "version" => "0",
+        "port" => nil,
+        "host" => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee"
       }
 
       YAML.dump(example_local_config)
     end
 
     def load_configuration
-      global_config_dir = File.expand_path('~/.config/harbr')
-      global_config_path = File.join(global_config_dir, 'harbr.manifest.yml')
-      local_config_path = File.join(Dir.pwd, 'config', 'manifest.yml')
+      global_config_dir = File.expand_path("~/.config/harbr")
+      global_config_path = File.join(global_config_dir, "harbr.manifest.yml")
+      local_config_path = File.join(Dir.pwd, "config", "manifest.yml")
 
       # Ensure global configuration exists
       unless File.exist?(global_config_path)
@@ -98,7 +121,7 @@ class LbhrrCLI < Thor
       # Ensure local configuration exists
       unless File.exist?(local_config_path)
         FileUtils.mkdir_p(File.dirname(local_config_path)) unless Dir.exist?(File.dirname(local_config_path))
-        File.write(local_config_path, create_example_local_config())
+        File.write(local_config_path, create_example_local_config)
       end
 
       # Load and merge configurations
@@ -111,22 +134,19 @@ class LbhrrCLI < Thor
       new_version = current_version + 1
 
       manifest = YAML.load_file(manifest_path)
-      manifest['version'] = new_version
-      File.open(manifest_path, 'w') { |file| file.write(manifest.to_yaml) }
+      manifest["version"] = new_version
+      File.write(manifest_path, manifest.to_yaml)
       puts "Version incremented to #{new_version}"
-
     end
-
   end
 
   desc "init", "Initialize project with .gitignore"
   def init
-
-    local_config_path = File.join(Dir.pwd, 'config', 'manifest.yml')
+    local_config_path = File.join(Dir.pwd, "config", "manifest.yml")
 
     unless File.exist?(local_config_path)
       FileUtils.mkdir_p(File.dirname(local_config_path)) unless Dir.exist?(File.dirname(local_config_path))
-      File.write(local_config_path, create_example_local_config())
+      File.write(local_config_path, create_example_local_config)
     end
     # Load and merge configurations
     local_config = YAML.load_file(local_config_path) || {}
@@ -135,97 +155,63 @@ class LbhrrCLI < Thor
     # Include other initialization tasks if necessary
   end
 
-  desc "package", "Prepare the application for deployment"
-  def package
-    begin
-      # Load configuration
-      config = load_configuration
-      host = config['host']
-      user = config['user']
-      port = config['port']
-      version = config['version'].to_i
-      raise "Configuration error: Host, User, or Version missing" unless host && port && user && version > 0
-
-      # Check for a git repository
-      unless `git rev-parse --is-inside-work-tree > /dev/null 2>&1`
-        raise "No Git repository found in the current directory"
-      end
-
-      # Delete vendor directory if it exists
-      vendor_path = File.join(Dir.pwd, 'vendor')
-      FileUtils.rm_rf(vendor_path) if Dir.exist?(vendor_path)
-      `bundle config set --local path 'vendor/bundle'`
-      `bundle install` or raise "Bundle install failed"
-      # Check if the repository is clean
-      puts "Git repository is dirty, committing changes..."
-      `git add .` or raise "Failed to add changes to Git"
-      `git commit -m 'packaged #{version}'` or raise "Failed to commit changes to Git"
-      puts "Packaging completed successfully."
-    rescue => e
-      puts "Packaging error: #{e.message}"
-    end
-  end
-
-  desc "destroy", "Destroy an app and remove all traces"
-  def destroy
+  desc "drop", "Destroy an app and remove all traces"
+  def drop
     container_name = File.basename(Dir.pwd)
     config = load_configuration
-    host = config['host']
-    user = config['user']
+    host = config["host"]
+    user = config["user"]
     puts "Destroying app: #{container_name}"
     `ssh #{user}@#{host} 'harbr drop #{container_name}'`
     puts "App #{container_name} has been successfully destroyed."
   end
 
-  desc   "deploy", "Deploy an application using the configuration from config/manifest.yml"
+  desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
   def deploy
-    begin
-      package
+    package
 
-      config = load_configuration
-      host = config['host']
-      user = config['user']
-      raise "Host configuration missing" unless host
+    config = load_configuration
+    host = config["host"]
+    user = config["user"]
+    raise "Host configuration missing" unless host
 
-      local_manifest_path = File.join(Dir.pwd, 'config', 'manifest.yml')
-      raise "Local manifest file not found at #{local_manifest_path}" unless File.exist?(local_manifest_path)
+    local_manifest_path = File.join(Dir.pwd, "config", "manifest.yml")
+    raise "Local manifest file not found at #{local_manifest_path}" unless File.exist?(local_manifest_path)
 
-      local_config = YAML.load_file(local_manifest_path) || {}
-      version = local_config['version'].to_i
-      raise "Version not specified in manifest.yml" unless version
+    local_config = YAML.load_file(local_manifest_path) || {}
+    version = local_config["version"].to_i
+    raise "Version not specified in manifest.yml" unless version
 
-      basename = File.basename(Dir.pwd)
-      base_directory = "/var/harbr/#{basename}"
-      versions_directory = "#{base_directory}/versions"
-      destination_path = "#{versions_directory}/#{version}"
-      current_path = "#{base_directory}/current"
+    basename = File.basename(Dir.pwd)
+    base_directory = "/var/harbr/#{basename}"
+    versions_directory = "#{base_directory}/versions"
+    destination_path = "#{versions_directory}/#{version}"
+    current_path = "#{base_directory}/current"
 
-      # Check and create the versions directory on the server
-      `ssh #{user}@#{host} 'mkdir -p #{versions_directory}'`
+    # Check and create the versions directory on the server
+    `ssh #{user}@#{host} 'mkdir -p #{versions_directory}'`
 
-      # Prepare the rsync exclude option using .gitignore
-      gitignore_path = File.join(Dir.pwd, '.gitignore')
-      exclude_option = File.exist?(gitignore_path) ? "--exclude='.git' --exclude-from='#{gitignore_path}'" : ""
+    # Prepare the rsync exclude option using .gitignore
+    gitignore_path = File.join(Dir.pwd, ".gitignore")
+    exclude_option = File.exist?(gitignore_path) ? "--exclude='.git' --exclude-from='#{gitignore_path}'" : ""
 
-      # Rsync files to the new version directory, excluding files as per .gitignore
-      rsync_command = "rsync -avz #{exclude_option} ./ #{user}@#{host}:#{destination_path}"
+    # Rsync files to the new version directory, excluding files as per .gitignore
+    rsync_command = "rsync -avz #{exclude_option} ./ #{user}@#{host}:#{destination_path}"
 
-      if `#{rsync_command}` &&
+    if `#{rsync_command}` &&
         `ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'`
-        puts "Successfully deployed application version #{version} to #{host}"
-        deployed(local_manifest_path, version)
-      else
-        puts "Failed to deploy application version #{version} to #{host}"
-      end
-    rescue => e
-      puts "Deployment error: #{e.message}"
+      puts "Successfully deployed application version #{version} to #{host}"
+      deployed(local_manifest_path, version)
+    else
+      puts "Failed to deploy application version #{version} to #{host}"
     end
+  rescue => e
+    puts "Deployment error: #{e.message}"
   end
 
   def self.exit_on_failure?
     true
   end
-
 end
 
 LbhrrCLI.start(ARGV)
