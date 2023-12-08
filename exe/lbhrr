@@ -237,6 +237,15 @@ class LbhrrCLI < Thor
     puts "Deployment error: #{e.message}"
   end
 
+  desc "logs", "Show logs for a container"
+  def logs
+    container_name = File.basename(Dir.pwd)
+    config = load_configuration
+    host = config["host"]
+    user = config["user"]
+    puts `ssh #{user}@#{host} 'harbr logs #{container_name}'` 
+  end
+
   def self.exit_on_failure?
     true
   end
