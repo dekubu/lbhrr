@@ -80,7 +80,7 @@ class LbhrrCLI < Thor
         'name' => File.basename(Dir.pwd),
         'version' => '0',
         'port' => nil,
-        'host' => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee'"
+        'host' => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee"
       }
 
       YAML.dump(example_local_config)
