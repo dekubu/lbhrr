@@ -79,6 +79,7 @@ class LbhrrCLI < Thor
       example_local_config = {
         'name' => File.basename(Dir.pwd),
         'version' => '0',
+        'port' => nil,
         'host' => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee'"
       }
 
@@ -143,8 +144,9 @@ class LbhrrCLI < Thor
       config = load_configuration
       host = config['host']
       user = config['user']
+      port - config['port']
       version = config['version'].to_i
-      raise "Configuration error: Host, User, or Version missing" unless host && user && version > 0
+      raise "Configuration error: Host, User, or Version missing" unless host && port && user && version > 0
 
       # Check for a git repository
       unless system("git rev-parse --is-inside-work-tree > /dev/null 2>&1")
