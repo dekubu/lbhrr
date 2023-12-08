@@ -7,7 +7,7 @@ require 'fileutils'
 class LbhrrCLI < Thor
   no_commands do
 
-    def stop_app_on_server(container_name)
+    def stop_app_on_server(container_nam)
       # Implement logic to stop the app on the server
       # This might include stopping services, processes, etc.
     end
@@ -183,7 +183,7 @@ class LbhrrCLI < Thor
   end
 
   desc "destroy", "Destroy an app and remove all traces"
-  def destroy(container_name)
+  def destroy
     puts "Destroying app: #{container_name}"
 
     # Step 1: Stop the app on the server
