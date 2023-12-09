@@ -96,11 +96,23 @@ class LbhrrCLI < Thor
       YAML.dump(example_global_config)
     end
 
+    def create_run_file
+      run_file_path = File.join(Dir.pwd, "exe", "run")
+      run_file_content = "#!/bin/sh\nbundle exec puma -p $1"
+
+      File.write(run_file_path, run_file_content)
+      File.chmod(0o755, run_file_path) # Set executable permission
+
+      puts "Created ./exe/run file."
+    rescue => e
+      puts "Error creating ./exe/run file: #{e.message}"
+    end
+
     def create_example_local_config
       example_local_config = {
         "name" => File.basename(Dir.pwd),
         "version" => "0",
-        "port" => nil,
+        "port" => "#{File.basename(Dir.pwd)}.app",
         "host" => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee"
       }
 
@@ -151,17 +163,18 @@ class LbhrrCLI < Thor
     # Load and merge configurations
     local_config = YAML.load_file(local_config_path) || {}
     create_gitignore
+    create_run_file
+    
 
     # Include other initialization tasks if necessary
   end
-
 
   desc "containers", "list all containers"
   def containers
     config = load_configuration
     host = config["host"]
     user = config["user"]
-    puts `ssh #{user}@#{host} 'harbr containers'`  
+    puts `ssh #{user}@#{host} 'harbr containers'`
   end
 
   desc "drop", "Destroy an app and remove all traces"
@@ -237,14 +250,13 @@ class LbhrrCLI < Thor
     puts "Deployment error: #{e.message}"
   end
 
-  
   desc "logs", "Show logs for a container"
   def logs
     container_name = File.basename(Dir.pwd)
     config = load_configuration
     host = config["host"]
     user = config["user"]
-    exec "ssh #{user}@#{host} 'harbr logs #{container_name}'" 
+    exec "ssh #{user}@#{host} 'harbr logs #{container_name}'"
   end
 
   def self.exit_on_failure?
