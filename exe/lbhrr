@@ -99,7 +99,9 @@ class LbhrrCLI < Thor
     def create_run_file
       run_file_path = File.join(Dir.pwd, "exe", "run")
       run_file_content = "#!/bin/sh\nbundle exec puma -p $1"
-
+      exe_directory = File.join(Dir.pwd, "exe")
+      
+      Dir.mkdir(exe_directory) unless Dir.exist?(exe_directory)
       File.write(run_file_path, run_file_content)
       File.chmod(0o755, run_file_path) # Set executable permission
 
