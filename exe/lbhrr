@@ -226,7 +226,7 @@ class LbhrrCLI < Thor
     raise "Version not specified in manifest.yml" unless version
 
     basename = File.basename(Dir.pwd)
-    base_directory = "/var/harbr/#{basename}"
+    base_directory = "/var/harbr/containers/#{basename}"
     versions_directory = "#{base_directory}/versions"
     destination_path = "#{versions_directory}/#{version}"
     current_path = "#{base_directory}/current"
