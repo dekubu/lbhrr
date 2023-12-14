@@ -273,6 +273,17 @@ class LbhrrCLI < Thor
     puts `ssh #{user}@#{host} 'harbr deploy #{name}'`
   end 
 
+  desc "rollback", "rollback an application using the configuration from config/manifest.yml"
+  def rollback
+    config = load_configuration
+    host = config["host"]
+    user = config["user"]
+    name = config["name"]
+
+    puts `ssh #{user}@#{host} 'harbr rollback #{name}'`
+  end 
+
+
   def self.exit_on_failure?
     true
   end
