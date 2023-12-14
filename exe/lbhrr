@@ -229,8 +229,7 @@ class LbhrrCLI < Thor
     base_directory = "/var/harbr/containers/#{basename}"
     versions_directory = "#{base_directory}/versions"
     destination_path = "#{versions_directory}/#{version}"
-    current_path = "#{base_directory}/current"
-
+    
     # Check and create the versions directory on the server
     `ssh #{user}@#{host} 'mkdir -p #{versions_directory}'`
 
@@ -242,7 +241,6 @@ class LbhrrCLI < Thor
     rsync_command = "rsync -avz #{exclude_option} ./ #{user}@#{host}:#{destination_path}"
 
     if `#{rsync_command}` &&
-        `ssh #{user}@#{host} 'ln -sfn #{destination_path} #{current_path}'`
       puts "Successfully deployed application version #{version} to #{host}"
       deployed(local_manifest_path, version)
     else
