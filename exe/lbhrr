@@ -240,7 +240,7 @@ class LbhrrCLI < Thor
     # Rsync files to the new version directory, excluding files as per .gitignore
     rsync_command = "rsync -avz #{exclude_option} ./ #{user}@#{host}:#{destination_path}"
 
-    if `#{rsync_command}` &&
+    if `#{rsync_command}`
       puts "Successfully deployed application version #{version} to #{host}"
       deployed(local_manifest_path, version)
     else
