@@ -209,7 +209,7 @@ class LbhrrCLI < Thor
     puts "App #{container_name} has been successfully destroyed."
   end
 
-  desc "raise", "Deploy an application using the configuration from config/manifest.yml"
+  desc "raise", "Deploy an application using the configuration from config/manifest.yml to staging"
   def raise
     package
 
@@ -263,10 +263,16 @@ class LbhrrCLI < Thor
 
 
 
-  desc "hoist", "Deploy an application using the configuration from config/manifest.yml"
+  desc "hoist", "Deploy an application using the configuration from config/manifest.yml to production"
   def hoist
+    config = load_configuration
+    host = config["host"]
+    user = config["user"]
+    name = config["name"]
 
+    puts `ssh #{user}@#{host} 'harbr deploy #{name}'`
   end 
+
   def self.exit_on_failure?
     true
   end
