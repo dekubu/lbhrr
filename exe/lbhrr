@@ -209,8 +209,8 @@ class LbhrrCLI < Thor
     puts "App #{container_name} has been successfully destroyed."
   end
 
-  desc "deploy", "Deploy an application using the configuration from config/manifest.yml"
-  def deploy
+  desc "raise", "Deploy an application using the configuration from config/manifest.yml"
+  def raise
     package
 
     config = load_configuration
@@ -261,6 +261,12 @@ class LbhrrCLI < Thor
     exec "ssh #{user}@#{host} 'harbr logs #{container_name}'"
   end
 
+
+
+  desc "hoist", "Deploy an application using the configuration from config/manifest.yml"
+  def hoist
+
+  end 
   def self.exit_on_failure?
     true
   end
