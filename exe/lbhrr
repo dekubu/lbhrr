@@ -230,9 +230,6 @@ class LbhrrCLI < Thor
     versions_directory = "#{base_directory}/versions"
     destination_path = "#{versions_directory}/#{version}"
     
-    # Check and create the versions directory on the server
-    `ssh #{user}@#{host} 'mkdir -p #{versions_directory}'`
-
     # Prepare the rsync exclude option using .gitignore
     gitignore_path = File.join(Dir.pwd, ".gitignore")
     exclude_option = File.exist?(gitignore_path) ? "--exclude='.git' --exclude-from='#{gitignore_path}'" : ""
