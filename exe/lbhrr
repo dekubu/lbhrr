@@ -193,7 +193,13 @@ class LbhrrCLI < Thor
     user = config["user"]
 
     if name.nil?
-      name = File.basename(Dir.pwd)
+
+      unless manifest?
+        puts "no manifest found!"
+        return
+      end
+
+      name = config["name"]
     end
 
     puts "Destroying app: #{name}"
@@ -202,8 +208,8 @@ class LbhrrCLI < Thor
     puts "App #{name} has been successfully destroyed."
   end
 
-  desc "lift", "Deploy an application using the configuration from config/manifest.yml to staging"
-  def lift
+  desc "raise", "Deploy an application using the configuration from config/manifest.yml to staging"
+  def raise
     if manifest?
       
       package
@@ -265,7 +271,8 @@ class LbhrrCLI < Thor
         return
       end
 
-      container_name = File.basename(Dir.pwd)
+      container_name = config["name"]
+
     else
       container_name = name
     end
