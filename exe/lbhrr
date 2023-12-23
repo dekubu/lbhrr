@@ -204,6 +204,11 @@ class LbhrrCLI < Thor
 
   desc "raise", "Deploy an application using the configuration from config/manifest.yml to staging"
   def raise
+    unless manifest?
+      puts "no manifest found!"
+      return
+    end
+
     package
 
     config = load_configuration
