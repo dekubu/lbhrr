@@ -188,36 +188,16 @@ class LbhrrCLI < Thor
   end
 
   desc "drop", "Destroy an app and remove all traces"
-  def drop
-    container_name = File.basename(Dir.pwd)
-    config = load_configuration
-    host = config["host"]
-    user = config["user"]
-
-    puts "Destroying app: #{container_name}"
-    `ssh #{user}@#{host} 'harbr destroy #{container_name}'`
-    unless manifest?
-      puts "no manifest found!"
-      return
+  def drop(name=nil)
+    if name.nil?
+      container_name = File.basename(Dir.pwd)
+      config = load_configuration
+      host = config["host"]
+      user = config["user"]
+      name = config["name"]
     end
-
-    current_dir = Dir.pwd
-    parent_dir = File.dirname(current_dir)
-
-    # Requesting confirmation
-    if yes? "Are you sure you want to delete the directory: #{current_dir}? [y/N]"
-      # Proceeding with deletion
-      puts "Changing directory to the parent directory..."
-      Dir.chdir(parent_dir)
-
-      puts "Deleting the directory: #{current_dir}"
-      FileUtils.rm_rf(current_dir)
-
-      Dir.chdir(parent_dir)
-
-      puts "#{current_dir} has been deleted."
-
-    end
+    puts "Destroying app: #{name}"
+    `ssh #{user}@#{host} 'harbr destroy #{name}'`
 
     puts "App #{container_name} has been successfully destroyed."
   end
