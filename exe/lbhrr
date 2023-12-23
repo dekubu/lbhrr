@@ -5,7 +5,7 @@ class LbhrrCLI < Thor
   no_commands do
 
     def manifest?
-      File.join(Dir.pwd, "config","manifest.yml")
+      File.exist? File.join(Dir.pwd, "config","manifest.yml")
     end
 
     def package
@@ -248,7 +248,7 @@ class LbhrrCLI < Thor
     else 
       puts "no manifest found!"
     end
-        
+
   end
 
   desc "logs", "Show logs for a container"
