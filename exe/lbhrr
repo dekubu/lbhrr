@@ -33,7 +33,7 @@ class LbhrrCLI < Thor
       system("git commit -m 'packaged #{version}'") or raise "Failed to commit changes to Git"
       puts "Packaging completed successfully."
     rescue => e
-      p e
+      raise e
       puts "Packaging error: #{e.message}"
     end
 
