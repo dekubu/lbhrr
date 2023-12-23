@@ -257,6 +257,8 @@ class LbhrrCLI < Thor
   end
 
   desc "logs", "Show logs for a container"
+  method_option :live, type: :boolean, aliases: "-l", desc: "Process in live mode"
+  method_option :next, type: :boolean, default: "default", aliases: "-n", desc: "Process in next mode"
   def logs(name=nil)
     config = load_configuration
     host = config["host"]
@@ -268,7 +270,7 @@ class LbhrrCLI < Thor
       container_name = name
     end
 
-    ssh    exec "ssh #{user}@#{host} 'harbr peek #{container_name}'"
+    ssh    exec "ssh #{user}@#{host} 'harbr peek #{option[:next] ? "--next" : "--live"} #{container_name}'"
   end
 
 
