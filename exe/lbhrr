@@ -15,6 +15,9 @@ class LbhrrCLI < Thor
       user = config["user"]
       port = config["port"]
       version = config["version"].to_i
+
+      puts "config: #{config}"
+      
       raise "Configuration error: Host, User, or Version missing" unless host && port && user && version > 0
 
       # Check for a git repository
