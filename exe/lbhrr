@@ -102,11 +102,12 @@ class LbhrrCLI < Thor
 
     def create_run_file
       run_file_path = File.join(Dir.pwd, "exe", "run")
-      run_file_content = "#!/bin/sh\n HARBR_ENV=$2 bundle exec puma -p $1"
+      web_run_file_content = "#!/bin/sh\n HARBR_ENV=$2 bundle exec puma -p $1"
+      service_run_file_content = "#!/bin/sh\n HARBR_ENV=$2 bundle exec ruby service"
       exe_directory = File.join(Dir.pwd, "exe")
 
       Dir.mkdir(exe_directory) unless Dir.exist?(exe_directory)
-      File.write(run_file_path, run_file_content)
+      File.write(run_file_path, web_run_file_content)
       File.chmod(0o755, run_file_path) # Set executable permission
 
       puts "Created ./exe/run file."
