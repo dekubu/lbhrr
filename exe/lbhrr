@@ -3,6 +3,11 @@ require_relative "../lib/lbhrr"
 
 class LbhrrCLI < Thor
   no_commands do
+
+    def manifest?
+      File.join(Dir.pwd, "config","manifest.yml")
+    end
+
     def package
       # Load configuration
       config = load_configuration
@@ -191,6 +196,10 @@ class LbhrrCLI < Thor
 
     puts "Destroying app: #{container_name}"
     `ssh #{user}@#{host} 'harbr destroy #{container_name}'`
+    unless manifest?
+      puts "no manifest found!"
+      return
+    end
 
     current_dir = Dir.pwd
     parent_dir = File.dirname(current_dir)
@@ -265,6 +274,11 @@ class LbhrrCLI < Thor
     user = config["user"]
 
     if name.nil?
+      unless manifest?
+        puts "no manifest found!"
+        return
+      end
+
       container_name = File.basename(Dir.pwd)
     else
       container_name = name
@@ -289,22 +303,34 @@ class LbhrrCLI < Thor
 
 
   desc "hoist", "Deploy an application using the configuration from config/manifest.yml to production"
-  def hoist
-    config = load_configuration
-    host = config["host"]
-    user = config["user"]
-    name = config["name"]
+  def hoist(name=nil)
+    if name.nil?
+      unless manifest?
+        puts "no manifest found!"
+        return
+      end
 
+      config = load_configuration
+      host = config["host"]
+      user = config["user"]
+      name = config["name"]
+    end
     puts `ssh #{user}@#{host} 'harbr deploy #{name}'`
   end 
 
   desc "rollback", "rollback an application using the configuration from config/manifest.yml"
-  def rollback
-    config = load_configuration
-    host = config["host"]
-    user = config["user"]
-    name = config["name"]
+  def rollback(name=nil)
+    if name.nil?
+      unless manifest?
+        puts "no manifest found!"
+        return
+      end
 
+      config = load_configuration
+      host = config["host"]
+      user = config["user"]
+      name = config["name"]
+    end
     puts `ssh #{user}@#{host} 'harbr rollback #{name}'`
   end 
 
