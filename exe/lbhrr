@@ -202,8 +202,8 @@ class LbhrrCLI < Thor
     puts "App #{name} has been successfully destroyed."
   end
 
-  desc "raise", "Deploy an application using the configuration from config/manifest.yml to staging"
-  def raise
+  desc "lift", "Deploy an application using the configuration from config/manifest.yml to staging"
+  def lift
     unless manifest?
       puts "no manifest found!"
       return
