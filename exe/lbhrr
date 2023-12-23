@@ -114,10 +114,11 @@ class LbhrrCLI < Thor
       puts "Error creating ./exe/run file: #{e.message}"
     end
 
-    def create_example_local_config
+    def create_example_local_config(type)
       example_local_config = {
         "name" => File.basename(Dir.pwd),
         "version" => "0",
+        "type" => type,
         "port" => "#{File.basename(Dir.pwd)}.app",
         "host" => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee"
       }
@@ -162,12 +163,13 @@ class LbhrrCLI < Thor
   end
 
   desc "init", "Initialize project with .gitignore"
+  method_option :type, type: :string, enum: ['web', 'service'], default: 'web', desc: "Specify the type of process"
   def init
     local_config_path = File.join(Dir.pwd, "config", "manifest.yml")
 
     unless File.exist?(local_config_path)
       FileUtils.mkdir_p(File.dirname(local_config_path)) unless Dir.exist?(File.dirname(local_config_path))
-      File.write(local_config_path, create_example_local_config)
+      File.write(local_config_path, create_example_local_config(options[:type]))
     end
     # Load and merge configurations
     local_config = YAML.load_file(local_config_path) || {}
