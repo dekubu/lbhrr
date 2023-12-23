@@ -28,9 +28,10 @@ class LbhrrCLI < Thor
         system "bundle install" or raise "Bundle install failed"
       end
 
-      
+      # Check if the repository is clean
+      puts "Git repository is dirty, committing changes..."
       system("git add .") or raise "Failed to add changes to Git"
-      system("git commit -m 'packaged #{version}'") or raise "Failed to commit changes to Git"
+      system("git commit -m 'packaged #{version}'")
       puts "Packaging completed successfully."
 
     end
@@ -85,7 +86,7 @@ class LbhrrCLI < Thor
       amend_last_commit commit_message
       # Create a Git tag for the version
       tag_message = "Deployment for version #{version}"
-      system("git tag -a 'v#{version}' -m '#{tag_message}'")
+      system("git tag -a 'v#{version}' -m '#{tag_message}'") or raise "Failed to create Git tag"
 
       puts "Deployment changes committed and tagged as v#{version}."
     rescue => e
