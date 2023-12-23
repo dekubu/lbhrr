@@ -270,7 +270,7 @@ class LbhrrCLI < Thor
       container_name = name
     end
 
-    ssh    exec "ssh #{user}@#{host} 'harbr peek #{optionw[:next] ? "--next" : "--live"} #{container_name}'"
+    ssh    exec "ssh #{user}@#{host} 'harbr peek #{options[:next] ? "--next" : "--live"} #{container_name}'"
   end
 
 
