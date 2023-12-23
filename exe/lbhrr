@@ -258,7 +258,7 @@ class LbhrrCLI < Thor
 
   desc "logs", "Show logs for a container"
   method_option :live, type: :boolean, aliases: "-l", desc: "Process in live mode"
-  method_option :next, type: :boolean, default: "default", aliases: "-n", desc: "Process in next mode"
+  method_option :next, type: :boolean, default: true, aliases: "-n", desc: "Process in next mode"
   def logs(name=nil)
     config = load_configuration
     host = config["host"]
