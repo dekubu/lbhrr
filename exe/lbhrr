@@ -290,15 +290,15 @@ class LbhrrCLI < Thor
 
   desc "hoist", "Deploy an application using the configuration from config/manifest.yml to production"
   def hoist(name=nil)
+    config = load_configuration
+    host = config["host"]
+    user = config["user"]
+
     if name.nil?
       unless manifest?
         puts "no manifest found!"
         return
       end
-
-      config = load_configuration
-      host = config["host"]
-      user = config["user"]
       name = config["name"]
     end
     puts `ssh #{user}@#{host} 'harbr deploy #{name}'`
@@ -306,15 +306,16 @@ class LbhrrCLI < Thor
 
   desc "rollback", "rollback an application using the configuration from config/manifest.yml"
   def rollback(name=nil)
+    
+    config = load_configuration
+    host = config["host"]
+    user = config["user"]
+
     if name.nil?
       unless manifest?
         puts "no manifest found!"
         return
       end
-
-      config = load_configuration
-      host = config["host"]
-      user = config["user"]
       name = config["name"]
     end
     puts `ssh #{user}@#{host} 'harbr rollback #{name}'`
