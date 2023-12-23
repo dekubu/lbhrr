@@ -189,13 +189,14 @@ class LbhrrCLI < Thor
 
   desc "drop", "Destroy an app and remove all traces"
   def drop(name=nil)
+    config = load_configuration
+    host = config["host"]
+    user = config["user"]
+    
     if name.nil?
-      container_name = File.basename(Dir.pwd)
-      config = load_configuration
-      host = config["host"]
-      user = config["user"]
-      name = config["name"]
+      name = File.basename(Dir.pwd)
     end
+
     puts "Destroying app: #{name}"
     `ssh #{user}@#{host} 'harbr destroy #{name}'`
 
