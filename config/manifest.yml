@@ -1,5 +1,5 @@
 ---
 name: lbhrr
-version: '0'
+version: 1
 port:
 host: lbhrr.harbr.zero2one.ee
