@@ -187,6 +187,7 @@ class LbhrrCLI < Thor
         puts "local config found"
         local_config = YAML.load_file(local_config_path) || {}
         global_config.merge!(local_config)
+        puts global_config
         return global_config
       end
 
