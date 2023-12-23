@@ -186,6 +186,9 @@ class LbhrrCLI < Thor
       if File.exist? local_config_path
         puts "local config found"
         local_config = YAML.load_file(local_config_path) || {}
+        
+        puts local_config
+
         global_config.merge(local_config)
       end
 
