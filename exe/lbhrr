@@ -204,49 +204,51 @@ class LbhrrCLI < Thor
 
   desc "lift", "Deploy an application using the configuration from config/manifest.yml to staging"
   def lift
-    unless manifest?
-      puts "no manifest found!"
-      return
-    end
+    if manifest?
+      
+      package
+      
 
-    package
-
-    config = load_configuration
-    host = config["host"]
-    user = config["user"]
-    raise "Host configuration missing" unless host
-
-    local_manifest_path = File.join(Dir.pwd, "config", "manifest.yml")
-    raise "Local manifest file not found at #{local_manifest_path}" unless File.exist?(local_manifest_path)
-
-    local_config = YAML.load_file(local_manifest_path) || {}
-    version = local_config["version"].to_i
-    raise "Version not specified in manifest.yml" unless version
-
-    basename = File.basename(Dir.pwd)
-    base_directory = "/var/harbr/containers/#{basename}"
-    versions_directory = "#{base_directory}/versions"
-    data_directory = "/var/dddr/#{basename}/"
-    destination_path = "#{versions_directory}/#{version}"
-    # Prepare the rsync exclude option using .gitignore
-    gitignore_path = File.join(Dir.pwd, ".gitignore")
-    exclude_option = File.exist?(gitignore_path) ? "--exclude='.git' --exclude-from='#{gitignore_path}'" : ""
-
-
-    # Check and create the versions directory on the server
-    `ssh #{user}@#{host} 'mkdir -p #{versions_directory}'`
-    `ssh #{user}@#{host} 'mkdir -p #{data_directory}'`
-
-    # Rsync files to the new version directory, excluding files as per .gitignore
-    rsync_command = "rsync -avz #{exclude_option} ./ #{user}@#{host}:#{destination_path}"
-
-    if `#{rsync_command}`
-      puts "Successfully deployed application version #{version} to #{host}"
-      deployed(local_manifest_path, version)
-    else
-      puts "Failed to deploy application version #{version} to #{host}"
-    end
+      config = load_configuration
+      host = config["host"]
+      user = config["user"]
+      raise "Host configuration missing" unless host
+  
+      local_manifest_path = File.join(Dir.pwd, "config", "manifest.yml")
+      raise "Local manifest file not found at #{local_manifest_path}" unless File.exist?(local_manifest_path)
+  
+      local_config = YAML.load_file(local_manifest_path) || {}
+      version = local_config["version"].to_i
+      raise "Version not specified in manifest.yml" unless version
+  
+      basename = File.basename(Dir.pwd)
+      base_directory = "/var/harbr/containers/#{basename}"
+      versions_directory = "#{base_directory}/versions"
+      data_directory = "/var/dddr/#{basename}/"
+      destination_path = "#{versions_directory}/#{version}"
+      # Prepare the rsync exclude option using .gitignore
+      gitignore_path = File.join(Dir.pwd, ".gitignore")
+      exclude_option = File.exist?(gitignore_path) ? "--exclude='.git' --exclude-from='#{gitignore_path}'" : ""
+  
+  
+      # Check and create the versions directory on the server
+      `ssh #{user}@#{host} 'mkdir -p #{versions_directory}'`
+      `ssh #{user}@#{host} 'mkdir -p #{data_directory}'`
+  
+      # Rsync files to the new version directory, excluding files as per .gitignore
+      rsync_command = "rsync -avz #{exclude_option} ./ #{user}@#{host}:#{destination_path}"
+  
+      if `#{rsync_command}`
+        puts "Successfully deployed application version #{version} to #{host}"
+        deployed(local_manifest_path, version)
+      else
+        puts "Failed to deploy application version #{version} to #{host}"
+      end
     
+    else 
+      puts "no manifest found!"
+    end
+        
   end
 
   desc "logs", "Show logs for a container"
