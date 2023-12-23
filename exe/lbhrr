@@ -139,7 +139,7 @@ class LbhrrCLI < Thor
       # Load and merge configurations
       global_config = YAML.load_file(global_config_path) || {}
 
-      if File.exists? local_config_path
+      if File.exist? local_config_path
         local_config = YAML.load_file(local_config_path) || {}
         global_config.merge(local_config)
       end
