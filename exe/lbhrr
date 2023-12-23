@@ -258,14 +258,16 @@ class LbhrrCLI < Thor
 
   desc "logs", "Show logs for a container"
   def logs(name='')
-    if name !=''
+
+    if name =''
+      config = load_configuration
+      host = config["host"]
+      user = config["user"]
       container_name = File.basename(Dir.pwd)
     else
       container_name = name
     end
-    config = load_configuration
-    host = config["host"]
-    user = config["user"]
+
     ssh    exec "ssh #{user}@#{host} 'harbr peek #{container_name}'"
   end
 
