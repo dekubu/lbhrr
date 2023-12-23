@@ -115,6 +115,7 @@ class LbhrrCLI < Thor
 
       loop do
         puts 'ok!' 
+        sleep 1
       end
 
       RUBY
