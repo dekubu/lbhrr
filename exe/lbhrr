@@ -32,9 +32,7 @@ class LbhrrCLI < Thor
       system("git add .") or raise "Failed to add changes to Git"
       system("git commit -m 'packaged #{version}'") or raise "Failed to commit changes to Git"
       puts "Packaging completed successfully."
-    rescue => e
-      raise e
-      puts "Packaging error: #{e.message}"
+      
     end
 
     def amend_last_commit(new_message)
