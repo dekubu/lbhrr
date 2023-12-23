@@ -144,6 +144,7 @@ class LbhrrCLI < Thor
         global_config.merge(local_config)
       end
 
+      global_config
     end
 
     def increment_version(manifest_path, current_version)
