@@ -250,8 +250,8 @@ class LbhrrCLI < Thor
     puts "App #{name} has been successfully destroyed."
   end
 
-  desc "raise", "Deploy an application using the configuration from config/manifest.yml to staging"
-  def raise
+  desc "lift", "Deploy an application using the configuration from config/manifest.yml to next"
+  def lift
     if manifest?
       
       package
@@ -337,7 +337,7 @@ class LbhrrCLI < Thor
   end
 
 
-  desc "hoist", "Deploy an application using the configuration from config/manifest.yml to production"
+  desc "hoist", "Deploy an application using the configuration from config/manifest.yml to live"
   def hoist(name=nil)
     config = load_configuration
     host = config["host"]
