@@ -167,7 +167,7 @@ class LbhrrCLI < Thor
 
     def load_configuration
       global_config_dir = File.expand_path("~/.config/harbr")
-      global_config_path = File.join(global_config_dir, "harbr.manifest.yml")
+      global_config_path = File.join(global_config_dir, "manifest.yml")
       local_config_path = File.join(Dir.pwd, "config", "manifest.yml")
 
       # Ensure global configuration exists
@@ -188,6 +188,8 @@ class LbhrrCLI < Thor
         global_config.merge(local_config)
       end
 
+      p global_config
+      
       global_config
     end
 
