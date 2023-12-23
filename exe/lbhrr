@@ -16,10 +16,6 @@ class LbhrrCLI < Thor
       port = config["port"]
       version = config["version"].to_i
 
-      puts "config: #{config}"
-      
-      raise "Configuration error: Host, User, or Version missing" unless host && port && user && version > 0
-
       # Check for a git repository
       unless `git rev-parse --is-inside-work-tree > /dev/null 2>&1`
         raise "No Git repository found in the current directory"
@@ -187,11 +183,8 @@ class LbhrrCLI < Thor
       global_config = YAML.load_file(global_config_path) || {}
 
       if File.exist? local_config_path
-        puts "local config found"
         local_config = YAML.load_file(local_config_path) || {}
         global_config.merge!(local_config)
-        puts global_config
-        return global_config
       end
 
       global_config
