@@ -100,17 +100,54 @@ class LbhrrCLI < Thor
       YAML.dump(example_global_config)
     end
 
-    def create_run_file
-      run_file_path = File.join(Dir.pwd, "exe", "run")
-      web_run_file_content = "#!/bin/sh\n HARBR_ENV=$2 bundle exec puma -p $1"
-      service_run_file_content = "#!/bin/sh\n HARBR_ENV=$2 bundle exec ruby service"
-      exe_directory = File.join(Dir.pwd, "exe")
+    def create_run_file(type)
 
-      Dir.mkdir(exe_directory) unless Dir.exist?(exe_directory)
-      File.write(run_file_path, web_run_file_content)
-      File.chmod(0o755, run_file_path) # Set executable permission
+      service_content = <<-RUBY
+      #!/usr/bin/env ruby
+      require 'bundler/inline'
 
-      puts "Created ./exe/run file."
+      gemfile do
+        source 'https://rubygems.org'
+        #gem 'kafkr', require: true
+      end
+
+      puts 'Gems installed and loaded!'
+
+      loop do
+        puts 'ok!' 
+      end
+
+      RUBY
+
+      if type == "web"
+        run_file_path = File.join(Dir.pwd, "exe", "run")
+        web_run_file_content = "#!/bin/sh\n HARBR_ENV=$2 bundle exec puma -p $1"
+        exe_directory = File.join(Dir.pwd, "exe")
+
+        Dir.mkdir(exe_directory) unless Dir.exist?(exe_directory)
+        File.write(run_file_path, web_run_file_content)
+        File.chmod(0o755, run_file_path) # Set executable permission
+        puts "Created ./exe/run file."
+      end
+
+      if type == "service"
+        run_file_path = File.join(Dir.pwd, "exe", "run")
+        service_run_file_content = "#!/bin/sh\n HARBR_ENV=$2 ruby service"
+        exe_directory = File.join(Dir.pwd, "exe")
+        
+        Dir.mkdir(exe_directory) unless Dir.exist?(exe_directory)
+        File.write(run_file_path, service_run_file_content)
+        File.chmod(0o755, run_file_path) # Set executable permission
+        puts "Created ./exe/run file."
+
+        File.write("service", service_content)
+        File.chmod(0o755, "service") # Set executable permission
+        puts "Created ./service file."
+        
+      end
+
+      
+
     rescue => e
       puts "Error creating ./exe/run file: #{e.message}"
     end
@@ -175,7 +212,8 @@ class LbhrrCLI < Thor
     # Load and merge configurations
     local_config = YAML.load_file(local_config_path) || {}
     create_gitignore
-    create_run_file
+    create_run_file(options[:type])
+
 
 
     # Include other initialization tasks if necessary
