@@ -21,11 +21,13 @@ class LbhrrCLI < Thor
         raise "No Git repository found in the current directory"
       end
 
-      # Delete vendor directory if it exists
-      vendor_path = File.join(Dir.pwd, "vendor")
-      FileUtils.rm_rf(vendor_path) if Dir.exist?(vendor_path)
-      `bundle config set --local path 'vendor/bundle'`
-      system "bundle install" or raise "Bundle install failed"
+      if File.exist? "Gemfile"
+        vendor_path = File.join(Dir.pwd, "vendor")
+        FileUtils.rm_rf(vendor_path) if Dir.exist?(vendor_path)
+        `bundle config set --local path 'vendor/bundle'`
+        system "bundle install" or raise "Bundle install failed"
+      end
+
       # Check if the repository is clean
       puts "Git repository is dirty, committing changes..."
       system("git add .") or raise "Failed to add changes to Git"
