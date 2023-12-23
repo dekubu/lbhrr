@@ -192,7 +192,7 @@ class LbhrrCLI < Thor
     config = load_configuration
     host = config["host"]
     user = config["user"]
-    
+
     if name.nil?
       name = File.basename(Dir.pwd)
     end
@@ -200,7 +200,7 @@ class LbhrrCLI < Thor
     puts "Destroying app: #{name}"
     `ssh #{user}@#{host} 'harbr destroy #{name}'`
 
-    puts "App #{container_name} has been successfully destroyed."
+    puts "App #{name} has been successfully destroyed."
   end
 
   desc "raise", "Deploy an application using the configuration from config/manifest.yml to staging"
