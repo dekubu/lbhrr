@@ -100,7 +100,7 @@ class LbhrrCLI < Thor
       run_file_path = File.join(Dir.pwd, "exe", "run")
       run_file_content = "#!/bin/sh\n HARBR_ENV=$2 bundle exec puma -p $1"
       exe_directory = File.join(Dir.pwd, "exe")
-      
+
       Dir.mkdir(exe_directory) unless Dir.exist?(exe_directory)
       File.write(run_file_path, run_file_content)
       File.chmod(0o755, run_file_path) # Set executable permission
@@ -134,14 +134,16 @@ class LbhrrCLI < Thor
 
       # Ensure local configuration exists
       unless File.exist?(local_config_path)
-        FileUtils.mkdir_p(File.dirname(local_config_path)) unless Dir.exist?(File.dirname(local_config_path))
-        File.write(local_config_path, create_example_local_config)
       end
 
       # Load and merge configurations
       global_config = YAML.load_file(global_config_path) || {}
-      local_config = YAML.load_file(local_config_path) || {}
-      global_config.merge(local_config)
+
+      if File.exists? local_config
+        local_config = YAML.load_file(local_config_path) || {}
+        global_config.merge(local_config)
+      end
+
     end
 
     def increment_version(manifest_path, current_version)
@@ -166,7 +168,7 @@ class LbhrrCLI < Thor
     local_config = YAML.load_file(local_config_path) || {}
     create_gitignore
     create_run_file
-    
+
 
     # Include other initialization tasks if necessary
   end
@@ -185,6 +187,7 @@ class LbhrrCLI < Thor
     config = load_configuration
     host = config["host"]
     user = config["user"]
+
     puts "Destroying app: #{container_name}"
     `ssh #{user}@#{host} 'harbr destroy #{container_name}'`
 
@@ -228,14 +231,17 @@ class LbhrrCLI < Thor
     basename = File.basename(Dir.pwd)
     base_directory = "/var/harbr/containers/#{basename}"
     versions_directory = "#{base_directory}/versions"
+    data_directory = "/var/dddr/#{basename}/"
     destination_path = "#{versions_directory}/#{version}"
     # Prepare the rsync exclude option using .gitignore
     gitignore_path = File.join(Dir.pwd, ".gitignore")
     exclude_option = File.exist?(gitignore_path) ? "--exclude='.git' --exclude-from='#{gitignore_path}'" : ""
 
-    
+
     # Check and create the versions directory on the server
     `ssh #{user}@#{host} 'mkdir -p #{versions_directory}'`
+    `ssh #{user}@#{host} 'mkdir -p #{data_directory}'`
+
     # Rsync files to the new version directory, excluding files as per .gitignore
     rsync_command = "rsync -avz #{exclude_option} ./ #{user}@#{host}:#{destination_path}"
 
@@ -255,7 +261,7 @@ class LbhrrCLI < Thor
     config = load_configuration
     host = config["host"]
     user = config["user"]
-    exec "ssh #{user}@#{host} 'harbr peek #{container_name}'"
+    ssh    exec "ssh #{user}@#{host} 'harbr peek #{container_name}'"
   end
 
 
