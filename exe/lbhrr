@@ -160,7 +160,8 @@ RUBY
         "version" => "0",
         "type" => type,
         "port" => "#{File.basename(Dir.pwd)}.app",
-        "host" => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee"
+        "host" => "#{File.basename(Dir.pwd)}.harbr.zero2one.ee",
+        "host_aliases" => []
       }
 
       YAML.dump(example_local_config)
